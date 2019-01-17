@@ -1,0 +1,364 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script src="p5.min.js"></script>
+    <script src="p5.sound.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="googleSheets.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>  
+     <style>
+         body{ background: orange;}
+          
+      </style>     
+      
+      
+  </head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.min.js"></script>
+
+  <body>
+      <div>
+    <div>あなたのID: <span id="myid"></span></div>
+    <div>ルームID: <span id="room"></span></div>
+    <div>受信した情報はコンソールログで確認してください</div>
+  </div>
+      <h1><center>MENU</center></h1>
+      
+      <center><input id = "btn" type ="button" value = "ご挨拶"></center>
+        <input id="mybtn" type ="button" value ="ラーメン">
+        <div id="contents"></div>
+        <input id="mybtn1" type ="button" value ="カレーライス">
+        <div id="contents1"></div>
+        <input id="mybtn2" type ="button" value ="肉">
+        <div id="contents2"></div>
+        <input id="mybtn3" type ="button" value ="オムライス">
+        <div id="contents3"></div>
+        <input id="mybtn4" type ="button" value ="パスタ">
+        <div id="contents4"></div>
+      <input id="mybtn5" type ="button" value ="ケーキ">
+        <div id="contents5"></div>
+      <input id="mybtn6" type ="button" value ="アイス">
+        <div id="contents6"></div>
+      <input id="mybtn7" type ="button" value ="パフェ">
+        <div id="contents7"></div>
+      <input id="mybtn8" type ="button" value ="プリン">
+        <div id="contents8"></div>
+      
+      
+    <script>
+        let room = "s1316229";
+    let socket = io.connect('https://qa.fujimura.com');    
+    let myid; 
+    
+    document.querySelector("#room").innerHTML = room;
+    socket.on('mylogin', function(data) {
+      myid = data;
+      socket.emit('join', room); // 受信room IDを指定
+      document.querySelector("#myid").innerHTML = myid;
+      console.log("あなたのID: ", myid);
+    });
+            
+    socket.on('sensor', function(data) {
+      speedX = 0.1*parseFloat(data.g);
+      speedY = 0.1*parseFloat(-data.b); 
+    console.log(data);
+    });
+    
+        let a,b,c,d,i;
+        let x = 0;
+    let y = 0;
+    let k = 0;    
+    let ramen;
+    let men;
+    let manpuku;
+    let kuchi;    
+    let speedX = 0;
+    let speedY = 0;
+    
+    function preload() {
+      ramen = loadImage("ramen.png");
+      manpuku = loadImage("manpuku.png");
+     kuchi = loadImage("kuchi.png");
+        men = loadImage("men.png");
+    }
+    
+    function setup() {
+      createCanvas(1500,1500);
+      background(255,99,71);
+      x = width / 2;
+        y = height /2;    
+      targetX = random(width);
+        targetY = random(height);    
+    }
+    
+    function draw() {
+      //background(200);
+        background(255,99,71);
+        image(men,100,100,1000,1000);
+      x = x + speedX;
+      y = y + speedY;
+      if (x>width) x = width;
+      if (x<0) x = 0;
+      if (y>height) y = height;
+      if (y<0) y = 0;
+      let distance = Math.sqrt(Math.pow(x-targetX,2)+Math.pow(y-targetY,2));
+        console.log(distance);
+        if(distance<=50)
+        { 
+            targetX = random(width);
+            targetY = random(height);
+            alert("もっとたべたい");
+            k=k+1;
+            if(k==2)
+            { 
+                alert("もういらん");
+            }
+            if(k==5)
+                {
+                    alert("ほんまにいらん");
+                }
+            if(k==10)
+                {
+                    alert("口開けてるからってずっと食べれるわけ違うわ");
+                }
+        }
+        image(kuchi,targetX, targetY, 300, 300);
+        image(ramen,x,y,300,300);
+    }  
+    /* global $ loadSheets */
+    
+    
+    $(function(){
+        "use strict";
+        
+  // unsupported.
+  if (!'SpeechSynthesisUtterance' in window) {
+      alert('Speech synthesis(音声合成) APIには未対応です.');
+      return;
+  }
+  // 発話機能をインスタンス化
+        $("#btn").on("click",showdata);
+        async function showdata () 
+        {
+            let data = await loadSheets('s1316229!A1:J15');  
+                        var msg = new SpeechSynthesisUtterance();
+                        msg.volume = 1.0; // 音量 min 0 ~ max 1
+                        msg.rate = 1.0; // 速度 min 0 ~ max 10
+                        msg.pitch = 1.2; // 音程 min 0 ~ max 2
+                        msg.lang = 'ja-JP'; // en-US or ja-JP    
+                        msg.text =  data.values[14][0];    
+                        speechSynthesis.speak(msg);     
+                            msg.onend = function (event) 
+                            {
+                                console.log('喋った時間：' + event.elapsedTime + 's');
+                            }    
+        } 
+
+        
+        
+      $("#mybtn").on("click",showdata1);
+        async function showdata1 () 
+        {
+            let data = await loadSheets('s1316229!A1:J15');
+                    for (i = 0; i <= 12; i+= 1)
+                    {   
+                        $("#contents").append(data.values[i][1]);
+                        $("#contents").append("<img width='100px' height='100px' src='"+data.values[i][0]+"'/>");
+                        var msg = new SpeechSynthesisUtterance();
+                        msg.volume = 1.0; // 音量 min 0 ~ max 1
+                        msg.rate = 1.0; // 速度 min 0 ~ max 10
+                        msg.pitch = 1.2; // 音程 min 0 ~ max 2
+                        msg.lang = 'ja-JP'; // en-US or ja-JP    
+                        msg.text =  data.values[i][1];    
+                        speechSynthesis.speak(msg);     
+                            msg.onend = function (event) 
+                            {
+                                console.log('喋った時間：' + event.elapsedTime + 's');
+                            }    
+                    } 
+
+        }
+        
+        $("#mybtn1").on("click",showdata2);
+        async function showdata2 () 
+        {
+            let data = await loadSheets('s1316229!A1:J15');
+                for (i = 0; i <= 3; i++)
+                {
+                        $("#contents1").append(data.values[i][3]);
+                        $("#contents1").append("<img width='100px' height='100px'   src='"+data.values[i][2]+"'/>");
+                        var msg = new SpeechSynthesisUtterance();
+                        msg.volume = 1.0; // 音量 min 0 ~ max 1
+                        msg.rate = 1.0; // 速度 min 0 ~ max 10
+                        msg.pitch = 1.2; // 音程 min 0 ~ max 2
+                        msg.lang = 'ja-JP'; // en-US or ja-JP    
+                        msg.text =  data.values[i][3];    
+                        speechSynthesis.speak(msg);     
+                            msg.onend = function (event) 
+                            {
+                                console.log('喋った時間：' + event.elapsedTime + 's');
+                            }        
+                }
+        }
+        
+        $("#mybtn2").on("click",showdata3);
+        async function showdata3 () 
+        {
+            let data = await loadSheets('s1316229!A1:J15');
+                for (i = 0; i <= 2; i++)
+                {
+                    $("#contents2").append(data.values[i][5]);
+                    $("#contents2").append("<img width='100px' height='100px' src='"+data.values[i][4]+"'/>");
+                    var msg = new SpeechSynthesisUtterance();
+                    msg.volume = 1.0; // 音量 min 0 ~ max 1
+                    msg.rate = 1.0; // 速度 min 0 ~ max 10
+                    msg.pitch = 1.2; // 音程 min 0 ~ max 2
+                    msg.lang = 'ja-JP'; // en-US or ja-JP    
+                    msg.text =  data.values[i][5];    
+                    speechSynthesis.speak(msg);     
+                        msg.onend = function (event) 
+                          {
+                                console.log('喋った時間：' + event.elapsedTime + 's');
+                          }        
+                }
+        }
+        
+        $("#mybtn3").on("click",showdata4);
+        async function showdata4 () 
+        {
+            let data = await loadSheets('s1316229!A1:J15');
+                for (i = 0; i <= 2; i++)
+                {
+                    $("#contents3").append(data.values[i][7]);
+                    $("#contents3").append("<img width='100px' height='100px' src='"+data.values[i][6]+"'/>");
+                    var msg = new SpeechSynthesisUtterance();
+                    msg.volume = 1.0; // 音量 min 0 ~ max 1
+                    msg.rate = 1.0; // 速度 min 0 ~ max 10
+                    msg.pitch = 1.2; // 音程 min 0 ~ max 2
+                    msg.lang = 'ja-JP'; // en-US or ja-JP    
+                    msg.text =  data.values[i][7];    
+                    speechSynthesis.speak(msg);     
+                         msg.onend = function (event) 
+                          {
+                                console.log('喋った時間：' + event.elapsedTime + 's');
+                          }        
+                }
+        }
+        
+        $("#mybtn4").on("click",showdata5);
+        async function showdata5 () 
+        {
+            let data = await loadSheets('s1316229!A1:J15');
+                for (i = 0; i <= 6; i++)
+                {
+                    $("#contents4").append(data.values[i][9]);
+                    $("#contents4").append("<img width='100px' height='100px' src='"+data.values[i][8]+"'/>");
+                    var msg = new SpeechSynthesisUtterance();
+                    msg.volume = 1.0; // 音量 min 0 ~ max 1
+                    msg.rate = 1.0; // 速度 min 0 ~ max 10
+                    msg.pitch = 1.2; // 音程 min 0 ~ max 2
+                    msg.lang = 'ja-JP'; // en-US or ja-JP    
+                    msg.text =  data.values[i][9];    
+                    speechSynthesis.speak(msg);     
+                        msg.onend = function (event) 
+                          {
+                                console.log('喋った時間：' + event.elapsedTime + 's');
+                          }        
+                }
+        }
+        $("#mybtn5").on("click",showdata6);
+        async function showdata6 () 
+        {
+            let data = await loadSheets('s1316229!A1:R20');
+                for (i = 0; i <= 17; i++)
+                {
+                    $("#contents5").append(data.values[i][11]);
+                    $("#contents5").append("<img width='100px' height='100px' src='"+data.values[i][10]+"'/>");
+                    var msg = new SpeechSynthesisUtterance();
+                    msg.volume = 1.0; // 音量 min 0 ~ max 1
+                    msg.rate = 1.0; // 速度 min 0 ~ max 10
+                    msg.pitch = 1.2; // 音程 min 0 ~ max 2
+                    msg.lang = 'ja-JP'; // en-US or ja-JP    
+                    msg.text =  data.values[i][11];    
+                    speechSynthesis.speak(msg);     
+                        msg.onend = function (event) 
+                          {
+                                console.log('喋った時間：' + event.elapsedTime + 's');
+                          }        
+                }
+        }
+        $("#mybtn6").on("click",showdata7);
+        async function showdata7 () 
+        {
+            let data = await loadSheets('s1316229!A1:R20');
+                for (i = 0; i <= 5; i++)
+                {
+                    $("#contents6").append(data.values[i][13]);
+                    $("#contents6").append("<img width='100px' height='100px' src='"+data.values[i][12]+"'/>");
+                    var msg = new SpeechSynthesisUtterance();
+                    msg.volume = 1.0; // 音量 min 0 ~ max 1
+                    msg.rate = 1.0; // 速度 min 0 ~ max 10
+                    msg.pitch = 1.2; // 音程 min 0 ~ max 2
+                    msg.lang = 'ja-JP'; // en-US or ja-JP    
+                    msg.text =  data.values[i][13];    
+                    speechSynthesis.speak(msg);     
+                        msg.onend = function (event) 
+                          {
+                                console.log('喋った時間：' + event.elapsedTime + 's');
+                          }        
+                }
+        }     
+        $("#mybtn7").on("click",showdata8);
+        async function showdata8 () 
+        {
+            let data = await loadSheets('s1316229!A1:R20');
+                for (i = 0; i <= 4; i++)
+                {
+                    $("#contents7").append(data.values[i][15]);
+                    $("#contents7").append("<img width='100px' height='100px' src='"+data.values[i][14]+"'/>");
+                    var msg = new SpeechSynthesisUtterance();
+                    msg.volume = 1.0; // 音量 min 0 ~ max 1
+                    msg.rate = 1.0; // 速度 min 0 ~ max 10
+                    msg.pitch = 1.2; // 音程 min 0 ~ max 2
+                    msg.lang = 'ja-JP'; // en-US or ja-JP    
+                    msg.text =  data.values[i][15];    
+                    speechSynthesis.speak(msg);     
+                        msg.onend = function (event) 
+                          {
+                                console.log('喋った時間：' + event.elapsedTime + 's');
+                          }        
+                }
+        }
+        $("#mybtn8").on("click",showdata9);
+        async function showdata9 () 
+        {
+            let data = await loadSheets('s1316229!A1:R20');
+                for (i = 0; i <= 3; i++)
+                {
+                    $("#contents8").append(data.values[i][17]);
+                    $("#contents8").append("<img width='100px' height='100px' src='"+data.values[i][16]+"'/>");
+                    var msg = new SpeechSynthesisUtterance();
+                    msg.volume = 1.0; // 音量 min 0 ~ max 1
+                    msg.rate = 1.0; // 速度 min 0 ~ max 10
+                    msg.pitch = 1.2; // 音程 min 0 ~ max 2
+                    msg.lang = 'ja-JP'; // en-US or ja-JP    
+                    msg.text =  data.values[i][17];    
+                    speechSynthesis.speak(msg);     
+                        msg.onend = function (event) 
+                          {
+                                console.log('喋った時間：' + event.elapsedTime + 's');
+                          }        
+                }
+        }     
+   
+   
+  });
+    
+    
+
+    </script>
+    <script async defer src="https://apis.google.com/js/api.js"
+      onload="this.onload=function(){};handleClientLoad()"
+      onreadystatechange="if (this.readyState === 'complete') this.onload()">
+    </script>
+  </body>
+</html>
